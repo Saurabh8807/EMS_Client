@@ -1,73 +1,70 @@
-import { createSlice } from "@reduxjs/toolkit"
-import axios from "axios"
+// src/redux/authSlice.js
+import { createSlice } from '@reduxjs/toolkit';
+import axios from '../axios.js';  // Import the configured axios instance
 
 const initialState = {
-    user : null,
-    accessToken : null,
-    refreshToken:null,
-    loading: false,
-    error:null,
-}
+  user: null,
+  loading: false,
+  error: null,
+};
 
 const authSlice = createSlice({
-    name:'auth',
-    initialState,
-    reducers: {
-        loginStart:(state)=>{
-            state.loading = true
-        },
-        loginSuccess:(state,action)=>{
-            state.user= action.payload.user;
-            state.accessToken = action.payload.accessToken;
-            state.refreshToken = action.payload.refreshToken;
-            state.loading = false;
-            state.error = null
-        },
-        loginFailure:(state,action)=>{
-            state.user =  null;
-            state.accessToken = null;
-            state.refreshToken = null;
-        },
-        logout:(state)=>{
-            state.user = null;
-            state.accessToken = null;
-            state.refreshToken = null;
-        },
-        setUser:(state, action)=>{
-            state.user = action.payload.user;
-        }
-    }
-})
+  name: 'auth',
+  initialState,
+  reducers: {
+    loginStart: (state) => {
+      state.loading = true;
+    },
+    loginSuccess: (state, action) => {
+      state.user = action.payload.user;
+      state.loading = false;
+      state.error = null;
+    },
+    loginFailure: (state, action) => {
+      state.error = action.payload;
+      state.loading = false;
+    },
+    logout: (state) => {
+      state.user = null;
+    },
+    setUser: (state, action) => {
+      state.user = action.payload;
+    },
+  },
+});
 
-export const { loginStart, loginSuccess, loginFailure, logout, setUser } = authSlice.actions
+export const { loginStart, loginSuccess, loginFailure, logout, setUser } = authSlice.actions;
 
 export const login = (email, password) => async (dispatch) => {
-    dispatch(loginStart())
+  dispatch(loginStart());
+  try {
+    console.log('Login attempt with email:', email, 'password:', password);
+    const response = await axios.post('/login', { email, password });
+    console.log('Login response:', response);
+    console.log(response.data.data)
+    dispatch(loginSuccess({ user: response.data.data }));
+  } catch (error) {
+    console.error('Login error:', error);
+    dispatch(loginFailure(error.response?.data?.message || 'Login failed'));
+  }
+};
 
-    try {
-        const response =  await axios.post('/api/login', { email,password} ,{withCredentials:true} )
-        dispatch(loginSuccess({user : response.data.user, accessToken:response.data.accessToken, refreshToken:response.data.refreshToken}))
-    } catch (error) {
-        dispatch(loginFailure(error.response.data.message))
-    }
-}
+export const logoutUser = () => async (dispatch) => {
+  try {
+    await axios.post('/logout', {});
+    dispatch(logout());
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
+};
 
-export const logoutUser = async (dispatch) =>{
-    try {
-        await axios.post('/api/logout', {},{withCredentials:true})
-        dispatch(logout())
-    } catch (error) {
-        console.error(error)
-    }
-}
+export const refreshTokens = () => async (dispatch) => {
+  try {
+    const response = await axios.post('/refreshTokens', {});
+    dispatch(loginSuccess({ user: response.data.data}));
+  } catch (error) {
+    console.error('Refresh tokens error:', error);
+  }
+};
 
-export const refreshToken = async (dispatch) => {
-    try {
-        const response =  await axios.post('/api/refreshToken',{},{withCredentials:true})
-        dispatch(loginSuccess({user:response.user, accessToken:response.data.accessToken, refreshToken:response.data.refreshToken}))
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export default authSlice.reducer
+export default authSlice.reducer;
