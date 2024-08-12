@@ -38,13 +38,11 @@ export const { loginStart, loginSuccess, loginFailure, logout, setUser } = authS
 export const login = (email, password) => async (dispatch) => {
   dispatch(loginStart());
   try {
-    console.log('Login attempt with email:', email, 'password:', password);
-    const response = await axios.post('/login', { email, password });
-    console.log('Login response:', response);
-    console.log(response.data.data)
+    const response = await axios.post('/user/login', { email, password });
+    console.log(response);
+    
     dispatch(loginSuccess({ user: response.data.data }));
   } catch (error) {
-    console.error('Login error:', error);
     dispatch(loginFailure(error.response?.data?.message || 'Login failed'));
   }
 };
@@ -60,8 +58,8 @@ export const logoutUser = () => async (dispatch) => {
 
 export const refreshTokens = () => async (dispatch) => {
   try {
-    const response = await axios.post('/refreshTokens', {});
-    dispatch(loginSuccess({ user: response.data.data}));
+    const response = await axios.post('/user/refreshTokens', {});
+    dispatch(loginSuccess({ user: response.data.user }));
   } catch (error) {
     console.error('Refresh tokens error:', error);
   }
