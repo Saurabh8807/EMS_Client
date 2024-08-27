@@ -11,17 +11,27 @@ const instance = axios.create({
 instance.interceptors.response.use(
   response => response,
   async (error) => {
-    
+    const originalReqeust = error.config;
     const { dispatch } = store;
-    console.log(dispatch)
-    console.log(error.response)
-    if (error && error.response.status === 401 && error.config &&
-      !error.config._isRetry) {
-        originalRequest._isRetry = false
+    if (error && error.response.status === 500 || error.response.status === 405 && originalReqeust &&
+      !originalReqeust._isRetry) {
+        originalReqeust._isRetry = true
       await dispatch(refreshTokens());
-      const newToken = store.getState().auth.accessToken;
-      error.config.headers['Authorization'] = `Bearer ${newToken}`;
-      return instance.request(error.config);
+      // const newToken = store.getState().auth.accessToken;
+      // console.log(newToken)
+      // console.log("store =>",store)
+      // console.log("stor.getState =>",store.getState())
+      // console.log("store.getState.auth =>",store.getState().auth)
+      // console.log("store.getState.auth.accessToken =>",store.getState.auth.accessToken)
+      // originalReqeust.headers['Authorization'] = `Bearer ${newToken}`;
+      // return instance.request(originalReqeust);
+      // try {
+      //   const res = await instance.post("/auth/refreshTokens");
+      //   console.log(res)
+      //   return instance(originalReqeust);
+      // } catch (error) {
+      //     console.log("Token Refresh failed",error);
+      // }
     }
     return Promise.reject(error);
   }

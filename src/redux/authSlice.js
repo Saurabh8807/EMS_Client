@@ -1,6 +1,5 @@
-// src/redux/authSlice.js
 import { createSlice } from '@reduxjs/toolkit';
-import axios from '../axios.js';  // Import the configured axios instance
+import axios from '../axios.js';  
 
 const initialState = {
   user: null,
@@ -38,8 +37,7 @@ export const { loginStart, loginSuccess, loginFailure, logout, setUser } = authS
 export const login = (email, password) => async (dispatch) => {
   dispatch(loginStart());
   try {
-    const response = await axios.post('/user/login', { email, password });
-    console.log(response);
+    const response = await axios.post('/auth/login', { email, password });
     
     dispatch(loginSuccess({ user: response.data.data }));
   } catch (error) {
@@ -58,8 +56,9 @@ export const logoutUser = () => async (dispatch) => {
 
 export const refreshTokens = () => async (dispatch) => {
   try {
-    const response = await axios.post('/user/refreshTokens', {});
-    dispatch(loginSuccess({ user: response.data.user }));
+    const response = await axios.post('/auth/refreshTokens', {});
+    
+    dispatch(loginSuccess({ user: response.data.data }));
   } catch (error) {
     console.error('Refresh tokens error:', error);
   }

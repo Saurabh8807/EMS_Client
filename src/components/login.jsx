@@ -15,11 +15,11 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      if (user.role === 'admin') {
+      if (user.role.name === 'admin') {
         navigate('/admin-dashboard');
-      } else if (user.role === 'employee') {
+      } else if (user.role.name === 'employee') {
         navigate('/employee-dashboard');
-      } else if (user.role === 'hr') {
+      } else if (user.role.name === 'hr') {
         navigate('/hr-dashboard');
       } else {
         navigate('/');
